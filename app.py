@@ -69,13 +69,17 @@ if selected_stock:
         st.write(f"**P/E Ratio:** {info.get('trailingPE', 'N/A')}")
 
     with col2:
-        # Interactive Chart
-        hist = stock.history(period="1mo")
-        fig = go.Figure(data=[go.Candlestick(x=hist.index,
-                        open=hist['Open'], high=hist['High'],
-                        low=hist['Low'], close=hist['Close'])])
-        fig.update_layout(title="Last 1 Month Performance", xaxis_rangeslider_visible=False)
-        st.plotly_chart(fig, use_container_width=True)
+            # Interactive Chart
+            hist = stock.history(period="1mo")
+            fig = go.Figure(data=[go.Candlestick(
+                x=hist.index,
+                open=hist['Open'],
+                high=hist['High'],
+                low=hist['Low'],
+                close=hist['Close']
+            )])
+            fig.update_layout(title="Last 1 Month Performance", xaxis_rangeslider_visible=False)
+            st.plotly_chart(fig, use_container_width=True)
 
     with st.expander("View Full Financials"):
         st.json(info)
