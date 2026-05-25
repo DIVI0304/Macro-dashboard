@@ -1,182 +1,85 @@
 import streamlit as st
 import pandas as pd
 
-# -----------------------------
-# MOCK KNOWLEDGE GRAPH (CORE ENGINE)
-# -----------------------------
-KNOWLEDGE_GRAPH = {
-    "India Heatwave + Government Subsidies": {
-        "cause": "Extreme temperature rise + policy support for cooling infrastructure",
-        "impact": "Increased demand for cooling, electricity, HVAC systems",
-        "supply_chain": [
-            "Power demand ↑ → Utilities load increases",
-            "Copper & electrical wiring demand ↑",
-            "AC manufacturing & compressor demand ↑"
-        ],
+# ------------------------------------------------------
+# 1. THE MOCK KNOWLEDGE GRAPH (Hardcoded Data)
+# ------------------------------------------------------
+# This dictionary acts as your free database. 
+# You can add as many new events here as you want later!
+
+macro_database = {
+    "🔥 India Heatwave + Cooling Subsidy": {
+        "thesis_map": "Extreme Temps ➔ AC Demand Spike ➔ Compressor Bottleneck ➔ Subsidy Boosts OEM Margins",
         "stocks": [
-            {
-                "ticker": "VOLTAS.NS",
-                "name": "Voltas",
-                "role": "AC Manufacturer",
-                "pe_ratio": 58.2,
-                "de_ratio": 0.12,
-                "score": 8.7
-            },
-            {
-                "ticker": "BLUESTARCO.NS",
-                "name": "Blue Star",
-                "role": "Cooling Systems & HVAC",
-                "pe_ratio": 52.4,
-                "de_ratio": 0.18,
-                "score": 8.5
-            },
-            {
-                "ticker": "AMBER.NS",
-                "name": "Amber Enterprises",
-                "role": "AC Components Manufacturer",
-                "pe_ratio": 66.1,
-                "de_ratio": 0.35,
-                "score": 8.9
-            }
+            {"Ticker": "AMBER.NS", "Company": "Amber Enterprises", "Supply Chain Role": "OEM/Component Mfg", "P/E Ratio": 45.2, "Debt/Equity": 0.8, "Risk": "Medium", "Action": "Top Pick"},
+            {"Ticker": "VOLTAS.NS", "Company": "Voltas Ltd", "Supply Chain Role": "Consumer AC Brand", "P/E Ratio": 60.1, "Debt/Equity": 0.1, "Risk": "Low", "Action": "Hold"},
+            {"Ticker": "SUBROS.NS", "Company": "Subros Ltd", "Supply Chain Role": "Thermal Compressors", "P/E Ratio": 35.5, "Debt/Equity": 0.4, "Risk": "High", "Action": "Spec Buy"}
         ]
     },
-
-    "US Electric Vehicle Mandates": {
-        "cause": "Government EV adoption mandates + tax incentives",
-        "impact": "Shift from ICE vehicles to EV ecosystem",
-        "supply_chain": [
-            "Lithium battery demand ↑",
-            "Semiconductors for EVs ↑",
-            "Charging infrastructure expansion ↑"
-        ],
+    "⚡ US Electric Vehicle Grid Mandate": {
+        "thesis_map": "EV Mandate ➔ Grid Overload ➔ Transformer Upgrades ➔ Copper & Switchgear Demand",
         "stocks": [
-            {
-                "ticker": "TSLA",
-                "name": "Tesla",
-                "role": "EV Manufacturer",
-                "pe_ratio": 70.5,
-                "de_ratio": 0.08,
-                "score": 9.2
-            },
-            {
-                "ticker": "NVDA",
-                "name": "NVIDIA",
-                "role": "EV Chips & AI Systems",
-                "pe_ratio": 45.3,
-                "de_ratio": 0.21,
-                "score": 9.5
-            },
-            {
-                "ticker": "ALB",
-                "name": "Albemarle",
-                "role": "Lithium Supplier",
-                "pe_ratio": 28.4,
-                "de_ratio": 0.40,
-                "score": 8.6
-            }
+            {"Ticker": "ETN", "Company": "Eaton Corp", "Supply Chain Role": "Grid Switchgear", "P/E Ratio": 28.4, "Debt/Equity": 0.6, "Risk": "Low", "Action": "Top Pick"},
+            {"Ticker": "FCX", "Company": "Freeport-McMoRan", "Supply Chain Role": "Raw Copper Mining", "P/E Ratio": 15.2, "Debt/Equity": 0.3, "Risk": "Medium", "Action": "Buy"},
+            {"Ticker": "PWR", "Company": "Quanta Services", "Supply Chain Role": "Grid Infrastructure Install", "P/E Ratio": 32.1, "Debt/Equity": 0.9, "Risk": "Medium", "Action": "Hold"}
         ]
     },
-
-    "Global Semiconductor Shortage": {
-        "cause": "Supply chain disruption + rising AI demand",
-        "impact": "Chip supply constraints across industries",
-        "supply_chain": [
-            "Chip manufacturers capacity constrained",
-            "Electronics production delays",
-            "Pricing power shifts to semiconductor firms"
-        ],
+    "🤖 Global AI Data Center Boom": {
+        "thesis_map": "AI Adoption ➔ Massive Server Farms ➔ Massive Cooling & Power Needs ➔ Liquid Cooling Shortage",
         "stocks": [
-            {
-                "ticker": "TSM",
-                "name": "TSMC",
-                "role": "Chip Manufacturing",
-                "pe_ratio": 32.1,
-                "de_ratio": 0.22,
-                "score": 9.6
-            },
-            {
-                "ticker": "AMD",
-                "name": "AMD",
-                "role": "Semiconductor Designer",
-                "pe_ratio": 38.7,
-                "de_ratio": 0.30,
-                "score": 9.1
-            },
-            {
-                "ticker": "INTC",
-                "name": "Intel",
-                "role": "Chip Manufacturing & R&D",
-                "pe_ratio": 25.6,
-                "de_ratio": 0.42,
-                "score": 7.8
-            }
+            {"Ticker": "VRT", "Company": "Vertiv Holdings", "Supply Chain Role": "Server Cooling Systems", "P/E Ratio": 55.0, "Debt/Equity": 1.2, "Risk": "Medium", "Action": "Top Pick"},
+            {"Ticker": "SMCI", "Company": "Super Micro", "Supply Chain Role": "Server Rack Assembly", "P/E Ratio": 40.5, "Debt/Equity": 0.2, "Risk": "High", "Action": "Buy"},
+            {"Ticker": "NVDA", "Company": "Nvidia", "Supply Chain Role": "AI Processors", "P/E Ratio": 75.3, "Debt/Equity": 0.1, "Risk": "Low", "Action": "Hold (Priced In)"}
         ]
     }
 }
 
-# -----------------------------
-# STREAMLIT UI
-# -----------------------------
-st.set_page_config(page_title="Macro Event Stock Dashboard", layout="wide")
+# ------------------------------------------------------
+# 2. DASHBOARD UI SETTINGS
+# ------------------------------------------------------
+st.set_page_config(page_title="Macro-to-Micro Screener", layout="wide")
 
-st.title("📊 Macro Event → Stock Intelligence Dashboard")
+st.title("🌍 Macro Catalyst & Supply Chain Screener")
+st.markdown("Identify second and third-order market beneficiaries from global macroeconomic events.")
+st.divider()
 
-st.write(
-    "This tool maps real-world macro events into supply chain impacts and potential stock beneficiaries."
+# ------------------------------------------------------
+# 3. SIDEBAR (User Input)
+# ------------------------------------------------------
+st.sidebar.header("Select Catalyst")
+# Create a dropdown menu using the keys from our mock database
+selected_event = st.sidebar.selectbox(
+    "Choose a Global Macro Event:",
+    options=list(macro_database.keys())
 )
 
-# Sidebar selection
-event = st.sidebar.selectbox(
-    "Select Macro Event",
-    list(KNOWLEDGE_GRAPH.keys())
-)
+st.sidebar.markdown("---")
+st.sidebar.info("💡 **How it works:** This tool maps real-world events to specific supply chain bottlenecks to find high-probability stock picks.")
 
-data = KNOWLEDGE_GRAPH[event]
+# ------------------------------------------------------
+# 4. MAIN DISPLAY (Data Output)
+# ------------------------------------------------------
+# Fetch the specific data for the chosen event
+event_data = macro_database[selected_event]
 
-# -----------------------------
-# MAIN THESIS VIEW
-# -----------------------------
+# Display the Logic/Thesis Map
 st.subheader("🧠 Investment Thesis Map")
+st.info(f"**{event_data['thesis_map']}**")
 
-st.markdown(f"""
-### Cause
-{data['cause']}
+st.write("") # Add a little space
 
-⬇️
+# Display the Recommended Stocks Table
+st.subheader("📈 Identified Beneficiaries")
 
-### Supply Chain Impact
-{data['impact']}
+# Convert the list of dictionaries into a clean Pandas DataFrame for Streamlit to render
+df = pd.DataFrame(event_data["stocks"])
 
-⬇️
-
-### Transmission Chain
-""")
-
-for step in data["supply_chain"]:
-    st.markdown(f"- {step}")
-
-# -----------------------------
-# STOCK TABLE
-# -----------------------------
-st.subheader("📈 Recommended Stocks (Mock Intelligence Engine)")
-
-df = pd.DataFrame(data["stocks"])
-
-df = df.rename(columns={
-    "ticker": "Ticker",
-    "name": "Company",
-    "role": "Supply Chain Role",
-    "pe_ratio": "P/E Ratio",
-    "de_ratio": "Debt/Equity",
-    "score": "Recommendation Score (0-10)"
-})
-
-st.dataframe(df, use_container_width=True)
-
-# -----------------------------
-# INSIGHT FOOTER
-# -----------------------------
-st.markdown("---")
-st.caption(
-    "⚠️ This is a mock system for learning. Not financial advice. No real-time data is used."
+# Display the dataframe as an interactive table
+st.dataframe(
+    df, 
+    use_container_width=True, 
+    hide_index=True # Hides the ugly number column on the left
 )
+
+# Add a fake disclaimer to make it look professional
+st.caption("Disclaimer: Fundamental data is for demonstration purposes. Always conduct your own due diligence.")
